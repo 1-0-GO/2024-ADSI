@@ -11,8 +11,8 @@ FROM Energy.MonthlyConsumption;
 -- create the partition function (year <= 2020, year > 2020 AND year <= 2021, year > 2021 AND year <= 2022, year > 2022)
 CREATE PARTITION FUNCTION
     MonthlyConsumption_PartitionByYear
-	(INT)
-AS RANGE LEFT FOR VALUES (2020, 2021, 2022);
+	(CHAR(4))
+AS RANGE LEFT FOR VALUES ('2020', '2021', '2022');
 
 -- create the partitions scheme on the primary filegroup
 CREATE PARTITION SCHEME 
@@ -23,7 +23,7 @@ ALL TO
 	( [PRIMARY] );
 
 CREATE UNIQUE CLUSTERED INDEX PK_MonthlyConsumption ON Energy.MonthlyConsumption 
-(Year, Month, VoltageLevel, DistrictMunicipalityParishCode)
+(Year, Month, DistrictMunicipalityParishCode, VoltageLevel)
 WITH (DROP_EXISTING = ON) 
 ON PartScheme_MonthlyConsumption(Year)
 
@@ -37,7 +37,3 @@ JOIN sys.destination_data_spaces dds ON p.partition_number = dds.destination_id
 JOIN sys.filegroups f ON dds.data_space_id = f.data_space_id
 WHERE OBJECT_NAME(OBJECT_ID) = 'MonthlyConsumption'
 ORDER BY partition_number;
-
-
-
-
